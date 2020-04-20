@@ -201,64 +201,61 @@ public:
             container.push(rand() % (maxPosibleValue + 1));
     }
 
-    void estimateCountingSort() {
+    float estimateCountingSort() {
         cout << "------Counting Sort-----";
-        cout << endl << "Size of container: " << container.getSize() << ", type of container: Stack" << endl;
-        cout << "begin values: ";
-        container.printAll();
-        cout << endl;
+        cout << endl << "Size of container: " << container.getSize() << ", type of container: Stack,";
+        
 
         const clock_t begin_time = clock();
         container.CountingSort();
-        float time = float(clock() - begin_time) / CLOCKS_PER_SEC;
+        const clock_t end_time = clock();
+        const float time = diffclock(end_time, begin_time);
 
-        cout << "sorted values: ";
-        container.printAll();
-        cout << endl << "Counting Sort time: " << time << " sec." << endl;
-        cout << "------------------------" << endl;
+        cout << " Sort time: " << time << " ms. or " << time / CLOCKS_PER_SEC << " sec."<< endl;
+        //cout << "------------------------" << endl;
+        return 1;
     }
 
-    void estimateBubbleSort() {
+    float estimateBubbleSort() {
         cout << "------Bubble Sort-----";
-        cout << endl << "Size of container: " << container.getSize() << ", type of container: Stack" << endl;
-        cout << "begin values: ";
-        container.printAll();
-        cout << endl;
+        cout << endl << "Size of container: " << container.getSize() << ", type of container: Stack,";
+
 
         const clock_t begin_time = clock();
-        container.BubbleSort();
-        float time = float(clock() - begin_time) / CLOCKS_PER_SEC;
+        container.CountingSort();
+        const clock_t end_time = clock();
+        const float time = diffclock(end_time, begin_time);
 
-        cout << "sorted values: ";
-        container.printAll();
-        cout << endl << "Bubble Sort time: " << time << " sec." << endl;
-        cout << "--------------------" << endl;
+        cout << " Sort time: " << time << " ms. or " << time / CLOCKS_PER_SEC << " sec." << endl;
+        //cout << "------------------------" << endl;
+        
+        return time;
     }
 
-    void test() {
-        container = Stack<int>();
-        container.push(1);
-        container.push(4);
-        container.push(1);
-        container.push(2);
-        container.push(7);
-        container.push(5);
-        container.push(2);
+    double diffclock(clock_t clock1, clock_t clock2) {
+        return double(clock1 - clock2);
     }
 };
 
 int main(int argc, const char* argv[]) {
     srand(time(NULL));
     Estimator estimator = Estimator();
-    int i = 0;
-    while (i++ < 5) {
-        estimator.createPositiveRandomValues(10, 10);
-        estimator.estimateCountingSort();
+    int maxValue = 10;
+
+    Stack<float> time = Stack<float>();
+    int sizesOfStacks[] = {10,50,100,200,300,500,1000};
+    int countOfTestings = sizeof(sizesOfStacks) / sizeof(*sizesOfStacks);
+
+    for (int i = 0; i < countOfTestings; i++) {
+        estimator.createPositiveRandomValues(sizesOfStacks[i], maxValue);
+        float k = estimator.estimateBubbleSort();
+        time.push(k);
     }
 
-    while (i-- > 0) {
-        estimator.createPositiveRandomValues(100, 10);
-        estimator.estimateCountingSort();
-    }
+
+    cout << "final statistic:" << endl;
+    for (int i = 0; i < countOfTestings;  i++) 
+        cout << "size = " << sizesOfStacks[countOfTestings - i - 1] << " t = " << time.pop() / CLOCKS_PER_SEC << " sec\n";
+    
     return 0;
 }
