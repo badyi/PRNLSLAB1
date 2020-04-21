@@ -10,21 +10,23 @@ private:
     T* data;
     int size;
 
+    //выделение памяти
     void allocate() {
         data = new T[size];
     }
-
+    
+    //удаление из памяти
     void deallocate() {
         delete[] data;
     }
 
+    //инициализатор пустого стека n-размера заполненного 0
     Stack(int n) {
-        size = n;
-        allocate();
-        for (int i = 0; i < size; i++)
-            set(NULL, i);
+        for (int i = 0; i < n; i++)
+            push(NULL);
     }
 public:
+    //инициализатор пустого стека
     Stack() {
         data = NULL;
         size = 0;
@@ -35,7 +37,7 @@ public:
         Stack<T> tempStack = Stack<T>();
         int sizeCS = copiedStack.size;
         size = 0;
-        for (int i = 0; i < sizeCS; i++)
+        for (int i = 0; i < sizeCS; i++) 
             tempStack.push(copiedStack.data[sizeCS - i - 1]);
         for (int i = 0; i < sizeCS; i++)
             push(tempStack.pop());
@@ -55,7 +57,14 @@ public:
         }
     }
 
-    //добавление в стек
+    // отчистить стек
+    void clear() {
+        size = 0;
+        deallocate();
+        data = nullptr;
+    }
+
+    //метод добавление в стек нового элемента
     void push(const T value) {
         T* n_ptr = new T[size + 1];
         memcpy(n_ptr, data, size * sizeof(T));
@@ -65,7 +74,7 @@ public:
         data = n_ptr;
     }
 
-    //изъятие последнего элемента
+    //изъятие последнего элемента из стека
     T pop() {
         T value = *(data + size - 1);
         memmove(data, data, (size - 1) * sizeof(T));
@@ -73,16 +82,15 @@ public:
         return value;
     }
 
-    //последний элемент
+    //возвращает последний элемент стека
     T back() {
-        T key = data[size - 1];
-        return key;
+        return data[size - 1];
     }
 
     // метод для вывода всего стека слева направо
     void printAll() {
         for (int i = 0; i < size; i++) {
-            cout << "[" << data[i] << "] ";
+            cout << "[" << get(i) << "] ";
         }
     }
 
@@ -91,19 +99,19 @@ public:
         return size == 0;
     }
 
-    T& operator[] (const int index) {
+    //получение i-го элемента через сабскрипты
+    T operator[] (const int index) {
+        return get(index);
+    }
+
+    //получение i-го элемента по индексу
+    T get(const int index) {
         Stack temp = *this;
         const int countOfPops = temp.size - index;
         int result;
         for (int i = 0; i < countOfPops; i++)
             result = temp.pop();
         return result;
-    }
-
-    //получить n-й элемент по индексу
-    T get(const int index) {
-        Stack temp = *this;
-        return temp[index];
     }
 
     //установить новое значение на n-ю позицию
@@ -115,6 +123,7 @@ public:
             push(temp[i]);
     }
 
+    //получение максимального значения
     T MaxValue() {
         T max = back();
         for (int i = 0; i < size; i++) {
@@ -125,6 +134,7 @@ public:
         return max;
     }
 
+    //получнеие минимального значения
     T MinValue() {
         T min = back();
         for (int i = 0; i < size; i++) {
@@ -135,26 +145,13 @@ public:
         return min;;
     }
 
+    //получение размера стека
     int getSize() {
         return size;
     }
-
-    void BubbleSort() {
-        for (int i = 0; i < size; i++) {
-            for (int j = i + 1; j < size; j++) {
-                if (get(i) > get(j)) {
-                    T temp = get(j);
-                    set(get(i), j);
-                    set(temp, i);
-                }
-            }
-        }
-    }
-
+    
     //сортировка подсчетом
-    void CountingSort() { //работает только с int
-        const T max = MaxValue();
-        const T min = MinValue();
+    void CountingSort(const int min, const T max) { //работает только с int
         const int sizeOfTempStack = max - min + 1;
         Stack<T> tempStack = Stack<T>(sizeOfTempStack);
 
@@ -185,77 +182,82 @@ public:
             sortedStack.set(value, pos);
         }
 
-        for (int i = 0; i < size; i++)
-            set(sortedStack.get(i), i);
+        int _size = size;
+        clear();
+        for (int i = 0; i < _size; i++)
+            push(sortedStack.get(i));
     }
 };
 
+    enum Sorts {
+        CountingSort,
+        BubbleSort,
+        HeapSort,
+        QuickSort
+    };
 
-class Estimator {
-private:
-    Stack<int> container;
-public:
-    void createPositiveRandomValues(const int size, int maxPosibleValue) {
-        container = Stack<int>();
-        for (int i = 0; i < size; i++)
-            container.push(rand() % (maxPosibleValue + 1));
-    }
+    class Estimator {
+    private:
+        Stack<int> container;
+    public:
+        void createPositiveRandomValues(const int size, int maxPosibleValue) {
+            container = Stack<int>();
+            for (int i = 0; i < size; i++)
+                container.push(rand() % (maxPosibleValue + 1));
+        }
 
-    float estimateCountingSort() {
-        cout << "------Counting Sort-----";
-        cout << endl << "Size of container: " << container.getSize() << ", type of container: Stack,";
-        
+        float estimateCountingSort() {
+            cout << "------Counting Sort-----";
+            cout << endl << "Size of container: " << container.getSize() << ", type of container: Stack,";
 
-        const clock_t begin_time = clock();
-        container.CountingSort();
-        const clock_t end_time = clock();
-        const float time = diffclock(end_time, begin_time);
+            const int max = container.MaxValue();
+            const int min = container.MinValue();
+            const clock_t begin_time = clock();
+            container.CountingSort(min, max);
+            const clock_t end_time = clock();
+            const float time = diffclock(end_time, begin_time);
+            Sorts current = CountingSort;
+            int operationsCount = evaluateOperations(current, container.getSize());
+            cout << " Sort time: " << time << " ms. or " << time / CLOCKS_PER_SEC << " sec. operations: " << operationsCount << endl;
+            cout << endl;
+            return time;
+        }
 
-        cout << " Sort time: " << time << " ms. or " << time / CLOCKS_PER_SEC << " sec."<< endl;
-        //cout << "------------------------" << endl;
-        return 1;
-    }
-
-    float estimateBubbleSort() {
-        cout << "------Bubble Sort-----";
-        cout << endl << "Size of container: " << container.getSize() << ", type of container: Stack,";
-
-
-        const clock_t begin_time = clock();
-        container.CountingSort();
-        const clock_t end_time = clock();
-        const float time = diffclock(end_time, begin_time);
-
-        cout << " Sort time: " << time << " ms. or " << time / CLOCKS_PER_SEC << " sec." << endl;
-        //cout << "------------------------" << endl;
-        
-        return time;
-    }
-
-    double diffclock(clock_t clock1, clock_t clock2) {
-        return double(clock1 - clock2);
-    }
-};
-
-int main(int argc, const char* argv[]) {
-    srand(time(NULL));
-    Estimator estimator = Estimator();
-    int maxValue = 10;
-
-    Stack<float> time = Stack<float>();
-    int sizesOfStacks[] = {10,50,100,200,300,500,1000};
-    int countOfTestings = sizeof(sizesOfStacks) / sizeof(*sizesOfStacks);
-
-    for (int i = 0; i < countOfTestings; i++) {
-        estimator.createPositiveRandomValues(sizesOfStacks[i], maxValue);
-        float k = estimator.estimateBubbleSort();
-        time.push(k);
-    }
-
-
-    cout << "final statistic:" << endl;
-    for (int i = 0; i < countOfTestings;  i++) 
-        cout << "size = " << sizesOfStacks[countOfTestings - i - 1] << " t = " << time.pop() / CLOCKS_PER_SEC << " sec\n";
+        double diffclock(clock_t clock1, clock_t clock2) {
+            return double(clock1 - clock2);
+        }
     
-    return 0;
-}
+        int evaluateOperations(Sorts type,int size) {
+            int n = size;
+            switch (type) {
+                case CountingSort:
+                   return 65 * n * n * n + 282 * n * n + 388 * n + 76;
+                    break;
+                default:
+                  return 0;
+            }
+        }
+    };
+
+
+    int main(int argc, const char* argv[]) {
+        srand(time(NULL));
+        Estimator estimator = Estimator();
+        int maxValue = 10;
+        Stack<float> time = Stack<float>();
+        int sizesOfStacks[] = { 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000 };
+        int countOfTestings = sizeof(sizesOfStacks) / sizeof(*sizesOfStacks);
+
+        for (int i = 0; i < countOfTestings; i++) {
+            estimator.createPositiveRandomValues(sizesOfStacks[i], maxValue);
+            float k = estimator.estimateCountingSort();
+            time.push(k);
+        }
+
+
+        cout << "final statistic:" << endl;
+        for (int i = 0; i < countOfTestings;  i++) 
+            cout << "size = " << sizesOfStacks[countOfTestings - i - 1] << " t = " << time.pop() / CLOCKS_PER_SEC << " sec\n";
+    
+        return 0;
+    }
