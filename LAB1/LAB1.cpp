@@ -38,9 +38,9 @@ public:
         int sizeCS = copiedStack.size;
         size = 0;
         for (int i = 0; i < sizeCS; i++) 
-            tempStack.push(copiedStack.data[sizeCS - i - 1]);
+            tempStack.push(copiedStack.data[sizeCS - i - 1]); //проход от последнего элемента до первого и добавление в временный стек
         for (int i = 0; i < sizeCS; i++)
-            push(tempStack.pop());
+            push(tempStack.pop());                            //пушим элементы из временного в текущий
     }
 
     //деструктор
@@ -189,46 +189,35 @@ public:
     }
 };
 
-    enum Sorts {
+    enum Sorts {    //различные типы сортировок
         CountingSort,
         BubbleSort,
         HeapSort,
         QuickSort
     };
 
-    class Estimator {
+    template<typename C>
+    class Estimator {       //класс для оценки сортировок
     private:
-        Stack<int> container;
+        C container;        //структура данных
     public:
-        void createPositiveRandomValues(const int size, int maxPosibleValue) {
-            container = Stack<int>();
+        void createPositiveRandomValues(const int size, int maxPosibleValue) {  //заполнение массива для counting sort
+            container = C();
             for (int i = 0; i < size; i++)
                 container.push(rand() % (maxPosibleValue + 1));
         }
 
         float estimateCountingSort() {
-            cout << "------Counting Sort-----";
-            cout << endl << "Size of container: " << container.getSize() << ", type of container: Stack,";
-
-            const int max = container.MaxValue();
-            const int min = container.MinValue();
-            const clock_t begin_time = clock();
-            container.CountingSort(min, max);
-            const clock_t end_time = clock();
-            const float time = diffclock(end_time, begin_time);
-            Sorts current = CountingSort;
-            int operationsCount = evaluateOperations(current, container.getSize());
-            cout << " Sort time: " << time << " ms. or " << time / CLOCKS_PER_SEC << " sec. operations: " << operationsCount << endl;
-            cout << endl;
-            return time;
+            cout << "doesnt support this types";
+            return 0;
         }
 
-        double diffclock(clock_t clock1, clock_t clock2) {
+        double diffclock(clock_t clock1, clock_t clock2) { 
             return double(clock1 - clock2);
         }
-    
-        int evaluateOperations(Sorts type,int size) {
-            int n = size;
+
+        long long evaluateOperations(Sorts type,int size) {   //подсчет кол-ва операций
+            long long n = size;
             switch (type) {
                 case CountingSort:
                    return 65 * n * n * n + 282 * n * n + 388 * n + 76;
@@ -239,13 +228,33 @@ public:
         }
     };
 
+    float Estimator<Stack<int>>:: estimateCountingSort() {  //запуск сортирвоки и ввывод данных о выполнении
+        cout << "------Counting Sort-----";
+        cout << endl << "Size of container: " << container.getSize() << ", type of container: Stack,";
+
+        const int max = container.MaxValue();
+        const int min = container.MinValue();
+
+        const clock_t begin_time = clock();
+        container.CountingSort(min, max);
+        const clock_t end_time = clock();
+
+        const float time = diffclock(end_time, begin_time);
+        Sorts current = CountingSort;
+        long long operationsCount = evaluateOperations(current, container.getSize());
+
+        cout << " Sort time: " << time << " ms. or " << time / CLOCKS_PER_SEC << " sec. operations: " << operationsCount << endl;
+        cout << endl;
+        return time;
+    }
 
     int main(int argc, const char* argv[]) {
         srand(time(NULL));
-        Estimator estimator = Estimator();
+        Estimator<Stack<int>> estimator = Estimator<Stack<int>>();
         int maxValue = 10;
         Stack<float> time = Stack<float>();
-        int sizesOfStacks[] = { 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000 };
+
+        int sizesOfStacks[] = { 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000 }; //кол-во элементов на которых тестируются структуры
         int countOfTestings = sizeof(sizesOfStacks) / sizeof(*sizesOfStacks);
 
         for (int i = 0; i < countOfTestings; i++) {
